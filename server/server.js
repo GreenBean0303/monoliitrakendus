@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = 3050;
 const cors = require("cors");
 app.use(cors());
 
@@ -104,7 +104,6 @@ app.post("/api/posts/:postId/comments", (req, res) => {
   res.status(201).json(newComment);
 });
 
-// Get all comments from all posts
 app.get("/api/comments", (req, res) => {
   let allComments = [];
   posts.forEach((post) => {
@@ -113,7 +112,6 @@ app.get("/api/comments", (req, res) => {
   res.json(allComments);
 });
 
-// Get a specific comment by ID
 app.get("/api/comments/:commentId", (req, res) => {
   const commentId = parseInt(req.params.commentId);
   let foundComment = null;
