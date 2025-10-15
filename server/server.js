@@ -2,8 +2,8 @@ const express = require("express");
 const app = express();
 const port = 3050;
 const cors = require("cors");
-app.use(cors());
 
+app.use(cors());
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -14,42 +14,10 @@ app.use((req, res, next) => {
 // Middleware
 app.use(express.json());
 
-let posts = [
-  {
-    id: 1,
-    title: "Esimene postitus",
-    content: "See on esimese postituse sisu",
-    author: "Kasutaja1",
-    createdAt: new Date(),
-    comments: [
-      {
-        id: 1,
-        postId: 1,
-        author: "Kommenteerija1",
-        content: "Hea postitus!",
-        createdAt: new Date(),
-      },
-      {
-        id: 2,
-        postId: 1,
-        author: "Kommenteerija2",
-        content: "Nõustun!",
-        createdAt: new Date(),
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: "Teine postitus",
-    content: "Teine postituse sisu",
-    author: "Kasutaja2",
-    createdAt: new Date(),
-    comments: [],
-  },
-];
-
-let nextPostId = 3;
-let nextCommentId = 3;
+// Andmestruktuurid - TÜHJAD
+let posts = [];
+let nextPostId = 1;
+let nextCommentId = 1;
 
 // API routes
 app.get("/api/posts", (req, res) => {
@@ -79,16 +47,13 @@ app.post("/api/posts", (req, res) => {
 app.get("/api/posts/:postId/comments", (req, res) => {
   const postId = parseInt(req.params.postId);
   const post = posts.find((p) => p.id === postId);
-
   if (!post) return res.status(404).json({ error: "Postitust ei leitud" });
-
   res.json(post.comments);
 });
 
 app.post("/api/posts/:postId/comments", (req, res) => {
   const postId = parseInt(req.params.postId);
   const { content, author } = req.body;
-
   const post = posts.find((p) => p.id === postId);
   if (!post) return res.status(404).json({ error: "Postitust ei leitud" });
 
@@ -115,7 +80,6 @@ app.get("/api/comments", (req, res) => {
 app.get("/api/comments/:commentId", (req, res) => {
   const commentId = parseInt(req.params.commentId);
   let foundComment = null;
-
   posts.forEach((post) => {
     const comment = post.comments.find((c) => c.id === commentId);
     if (comment) foundComment = comment;

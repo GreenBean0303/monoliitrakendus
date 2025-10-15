@@ -1,33 +1,45 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+const express = require("express");
+const cors = require("cors");
 
-const CommentList = ({ postId }) => {
-  const [comments, setComments] = useState([]);
+const app = express();
+const port = 4000;
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:4000/posts/${postId}/comments`
-        );
-        setComments(res.data);
-      } catch (error) {
-        console.error("Viga kommentaaride laadimisel:", error);
-      }
-    };
+app.use(cors());
+app.use(express.json());
 
-    fetchComments();
-  }, [postId]);
+const commentsByPostId = {};
+let nextCommentId = 1;
 
-  const renderedComments = comments.map((comment) => {
-    return <li key={comment.id}>{comment.content}</li>;
-  });
+app.get("/posts/:id/comments", (req, res) => {
+  const postId = req.params.id;
+  const comments = commentsByPostId[postId] || [];
+  res.json(comments);
+});
 
-  return (
-    <div className="comments-section">
-      <ul>{renderedComments}</ul>
-    </div>
-  );
-};
+app.post("/posts/:id/comments", (req, res) => {
+  const postId = req.params.id;
+  const { content, author } = req.body;
 
-export default CommentList;
+  const comment = {
+    id: nextCommentId++,
+    content,
+    author: author || "Anonymous",
+    createdAt: new Date(),
+  };
+
+  if (!commentsByPostId[postId]) {
+    commentsByPostId[postId] = [];
+  }
+
+  commentsByPostId[postId].push(comment);
+
+  res.status(201).json(comment);
+});
+
+app.get("/comments", (req, res) => {
+  res.json(commentsByPostId);
+});
+
+app.listen(port, () => {
+  console.log(`Comments service töötab pordil ${port}`);
+});
