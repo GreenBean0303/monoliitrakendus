@@ -1,24 +1,6 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
 
-const CommentList = ({ postId }) => {
-  const [comments, setComments] = useState([]);
-
-  const fetchComments = async () => {
-    try {
-      const res = await axios.get(
-        `http://localhost:4000/posts/${postId}/comments`
-      );
-      setComments(res.data);
-    } catch (error) {
-      console.error("Viga kommentaaride laadimisel:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchComments();
-  }, [postId]);
-
+const CommentList = ({ comments }) => {
   const renderedComments = comments.map((comment) => {
     return <li key={comment.id}>{comment.content}</li>;
   });

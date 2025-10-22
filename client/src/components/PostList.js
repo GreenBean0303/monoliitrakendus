@@ -4,11 +4,11 @@ import CommentCreate from "./CommentCreate";
 import CommentList from "./CommentList";
 
 const PostList = () => {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState({});
 
   const fetchPosts = async () => {
     try {
-      const res = await axios.get("http://localhost:3050/api/posts");
+      const res = await axios.get("http://localhost:5002/api/posts"); // ⭐ /api/posts
       setPosts(res.data);
     } catch (error) {
       console.error("Viga postituste laadimisel:", error);
@@ -19,7 +19,7 @@ const PostList = () => {
     fetchPosts();
   }, []);
 
-  const renderedPosts = posts.map((post) => {
+  const renderedPosts = Object.values(posts).map((post) => {
     return (
       <div
         className="card"
@@ -31,7 +31,7 @@ const PostList = () => {
           <p>{post.content}</p>
           <small className="text-muted">Autor: {post.author}</small>
           <hr />
-          <CommentList postId={post.id} />
+          <CommentList comments={post.comments} />
           <CommentCreate postId={post.id} />
         </div>
       </div>
