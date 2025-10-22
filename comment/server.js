@@ -40,6 +40,11 @@ app.get("/comments", (req, res) => {
   res.json(commentsByPostId);
 });
 
+app.post("/events", (req, res) => {
+  console.log("Sündmus vastu võetud:", req.body);
+  res.json({});
+});
+
 app.listen(port, () => {
   console.log(`Comments service töötab pordil ${port}`);
 });
