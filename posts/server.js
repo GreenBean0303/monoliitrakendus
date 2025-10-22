@@ -41,7 +41,6 @@ app.post("/api/posts", async (req, res) => {
     comments: [],
   };
   posts.push(newPost);
-  res.status(201).json(newPost);
 
   await axios
     .post("http://localhost:5000/api/events", {
@@ -53,11 +52,9 @@ app.post("/api/posts", async (req, res) => {
   res.status(201).json(newPost);
 });
 
-app.put("/api/events", (req, res) => {
+app.post("/api/events", (req, res) => {
   const { type, data } = req.body;
-
   console.log("Sündmus vastu võetud:", type);
-
   res.send({ status: "OK" });
 });
 
