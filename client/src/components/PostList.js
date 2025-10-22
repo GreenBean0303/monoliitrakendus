@@ -8,7 +8,8 @@ const PostList = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await axios.get("http://localhost:5002/api/posts"); // ⭐ /api/posts
+      const res = await axios.get("http://localhost:5002/api/posts");
+      console.log("Saadud andmed:", res.data);
       setPosts(res.data);
     } catch (error) {
       console.error("Viga postituste laadimisel:", error);
@@ -20,6 +21,8 @@ const PostList = () => {
   }, []);
 
   const renderedPosts = Object.values(posts).map((post) => {
+    console.log("Renderdame posti:", post);
+
     return (
       <div
         className="card"
@@ -31,7 +34,8 @@ const PostList = () => {
           <p>{post.content}</p>
           <small className="text-muted">Autor: {post.author}</small>
           <hr />
-          <CommentList comments={post.comments} />
+          <h5>Kommentaarid ({post.comments?.length || 0}):</h5>
+          <CommentList comments={post.comments || []} />
           <CommentCreate postId={post.id} />
         </div>
       </div>

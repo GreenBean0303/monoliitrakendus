@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-
 const app = express();
 const port = 4000;
 
@@ -26,6 +25,7 @@ app.post("/posts/:id/comments", async (req, res) => {
     content,
     author: author || "Anonymous",
     postId: postId,
+    status: "pending",
     createdAt: new Date(),
   };
 
@@ -51,9 +51,42 @@ app.get("/comments", (req, res) => {
   res.json(commentsByPostId);
 });
 
-app.post("/events", (req, res) => {
-  console.log("Sündmus vastu võetud:", req.body);
-  res.json({});
+app.post("/events", async (req, res) => {
+  const { type, data } = req.body;
+
+  console.log("Sündmus vastu võetud:", type);
+
+  if (type === "CommentModerated") {
+    const { id, status, postId } = data;
+
+    const comments =
+      commentsByPostId[postId] || commentsByPostId[String(postId)];
+
+    if (comments) {
+      const comment = comments.find((c) => c.id === id || c.id === Number(id));
+
+      if (comment) {
+        comment.status = status;
+
+        console.log(`Kommentaar ${id} staatus uuendatud: ${status}`);
+
+        await axios
+          .post("http://localhost:5000/api/events", {
+            type: "CommentUpdated",
+            data: comment,
+          })
+          .catch((err) => {
+            console.log("Viga sündmuse saatmisel:", err.message);
+          });
+      } else {
+        console.log("VIGA: Kommentaari ei leitud! ID:", id);
+      }
+    } else {
+      console.log("VIGA: Postitust ei leitud! PostId:", postId);
+    }
+  }
+
+  res.send({ status: "OK" });
 });
 
 app.listen(port, () => {

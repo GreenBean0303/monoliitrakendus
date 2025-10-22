@@ -31,6 +31,10 @@ app.post("/api/events", async (req, res) => {
     console.log("Viga query teenusele saatmisel:", err.message);
   });
 
+  axios.post("http://localhost:5003/events", event).catch((err) => {
+    console.log("Viga moderation teenusele saatmisel:", err.message);
+  });
+
   res.status(201).json({ status: "OK" });
 });
 

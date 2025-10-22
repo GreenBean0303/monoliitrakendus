@@ -23,13 +23,39 @@ app.post("/events", (req, res) => {
       author,
       comments: [],
     };
+    console.log("Postitus lisatud:", posts[id]);
   }
 
   if (type === "CommentCreated") {
-    const { postId, id, content, author } = data;
-    const post = posts[postId];
+    const { postId, id, content, author, status } = data;
+    const post = posts[postId] || posts[String(postId)];
+
+    console.log("PostId:", postId, "Post leitud:", !!post);
+
     if (post) {
-      post.comments.push({ id, content, author });
+      post.comments.push({ id, content, author, status });
+      console.log("Kommentaar lisatud:", post.comments);
+    } else {
+      console.log("VIGA: Postitust ei leitud!");
+    }
+  }
+
+  if (type === "CommentUpdated") {
+    const { postId, id, status } = data;
+    const post = posts[postId] || posts[String(postId)];
+
+    if (post) {
+      const comment = post.comments.find(
+        (c) => c.id === id || c.id === Number(id)
+      );
+      if (comment) {
+        comment.status = status;
+        console.log("Kommentaari staatus uuendatud:", comment);
+      } else {
+        console.log("VIGA: Kommentaari ei leitud! ID:", id);
+      }
+    } else {
+      console.log("VIGA: Postitust ei leitud! PostId:", postId);
     }
   }
 
@@ -37,6 +63,7 @@ app.post("/events", (req, res) => {
 });
 
 app.get("/api/posts", (req, res) => {
+  console.log("GET /api/posts - tagastame:", posts);
   res.json(posts);
 });
 
