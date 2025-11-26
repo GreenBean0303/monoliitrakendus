@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const app = express();
-const port = 5003;
+const port = 5002;
 
 app.use(cors());
 app.use(express.json());
@@ -20,7 +20,7 @@ app.post("/events", async (req, res) => {
     console.log(`Kommentaar ${id} modereeritud: ${status}`);
 
     await axios
-      .post("http://localhost:5000/api/events", {
+      .post("http://event-bus:5000/api/events", {
         type: "CommentModerated",
         data: {
           id,
