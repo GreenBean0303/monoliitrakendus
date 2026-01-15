@@ -4,7 +4,12 @@ const app = express();
 const port = 3050;
 const cors = require("cors");
 const axios = require("axios");
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://localhost"],
+    credentials: true,
+  })
+);
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");

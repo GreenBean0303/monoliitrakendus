@@ -1,7 +1,7 @@
 import React from "react";
 
 const CommentList = ({ comments }) => {
-  console.log("Kommentaarid komponendis:", comments); // ⭐ DEBUG
+  console.log("Kommentaarid komponendis:", comments);
 
   if (!comments || comments.length === 0) {
     return <p className="text-muted">Kommentaare pole veel lisatud</p>;

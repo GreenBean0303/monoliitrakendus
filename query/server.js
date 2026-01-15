@@ -5,7 +5,12 @@ const app = express();
 const port = 5003;
 
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://localhost"],
+    credentials: true,
+  })
+);
 
 const posts = {};
 

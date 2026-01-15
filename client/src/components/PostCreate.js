@@ -9,7 +9,7 @@ const PostCreate = () => {
   const onSubmit = async (event) => {
     event.preventDefault();
 
-    await axios.post("http://localhost:3050/api/posts", {
+    await axios.post("https://blog.local/api/posts", {
       title,
       content,
       author,

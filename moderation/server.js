@@ -4,7 +4,12 @@ const cors = require("cors");
 const app = express();
 const port = 5002;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://localhost"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.post("/events", async (req, res) => {
