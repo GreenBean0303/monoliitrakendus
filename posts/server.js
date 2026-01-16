@@ -28,6 +28,43 @@ let posts = [];
 let nextPostId = 1;
 let nextCommentId = 1;
 
+const authenticateToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Token puudub" });
+  }
+
+  const token = authHeader.substring(7);
+
+  try {
+    // Ask auth service to verify the token
+    const response = await axios.post(
+      "http://auth:5006/auth/verify",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.valid) {
+      req.user = response.data.user;
+      next();
+    } else {
+      return res.status(403).json({ error: "Kehtetu token" });
+    }
+  } catch (error) {
+    return res.status(403).json({ error: "Token verification failed" });
+  }
+};
+
+// Now protect your route by adding the middleware:
+app.get("/api/posts", authenticateToken, (req, res) => {
+  res.json(posts);
+});
+
 app.get("/api/posts", (req, res) => {
   res.json(posts);
 });

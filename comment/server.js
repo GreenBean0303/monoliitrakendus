@@ -24,6 +24,41 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+//ADD AUTHENTICATION MIDDLEWARE
+const authenticateToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Token puudub" });
+  }
+
+  const token = authHeader.substring(7);
+
+  try {
+    // Ask auth service to verify the token
+    const response = await axios.post(
+      "http://auth:5006/auth/verify",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.valid) {
+      req.user = response.data.user;
+      next();
+    } else {
+      return res.status(403).json({ error: "Kehtetu token" });
+    }
+  } catch (error) {
+    console.log("Token verification error:", error.message);
+    return res.status(403).json({ error: "Token verification failed" });
+  }
+};
+// =END AUTHENTICATION MIDDLEWARE
+
 const commentsByPostId = {};
 let nextCommentId = 1;
 
@@ -33,7 +68,8 @@ app.get("/posts/:id/comments", (req, res) => {
   res.json(comments);
 });
 
-app.post("/posts/:id/comments", async (req, res) => {
+// PROTECTED ROUTE
+app.post("/posts/:id/comments", authenticateToken, async (req, res) => {
   const postId = req.params.id;
   const { content, author } = req.body;
 
