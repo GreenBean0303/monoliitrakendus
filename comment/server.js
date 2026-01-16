@@ -4,12 +4,24 @@ const axios = require("axios");
 const app = express();
 const port = 4000;
 
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "https://localhost"],
-    credentials: true,
-  })
-);
+const allowedOrigins = [
+  "https://blog.local",
+  "http://blog.local",
+  "http://localhost:3000",
+];
+
+const corsOptions = {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error("CORS blocked: " + origin));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: false,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const commentsByPostId = {};
@@ -41,7 +53,7 @@ app.post("/posts/:id/comments", async (req, res) => {
   commentsByPostId[postId].push(comment);
 
   await axios
-    .post("http://event-bus:5000/api/events", {
+    .post("http://event-bus:5000/events", {
       type: "CommentCreated",
       data: comment,
     })
@@ -76,7 +88,7 @@ app.post("/events", async (req, res) => {
         console.log(`Kommentaar ${id} staatus uuendatud: ${status}`);
 
         await axios
-          .post("http://event-bus:5000/api/events", {
+          .post("http://event-bus:5000/events", {
             type: "CommentUpdated",
             data: comment,
           })

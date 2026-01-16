@@ -1,24 +1,34 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+
 const app = express();
 const port = 5003;
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "https://localhost"],
-    credentials: true,
-  })
-);
+
+const allowedOrigins = [
+  "https://blog.local",
+  "http://blog.local",
+  "http://localhost:3000",
+];
+
+const corsOptions = {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error("CORS blocked: " + origin));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: false,
+};
+
+app.use(cors(corsOptions));
 
 const posts = {};
 
-app.post("/events", (req, res) => {
-  const { type, data } = req.body;
-
-  console.log("Sündmus vastu võetud:", type);
-
+const handleEvent = (type, data) => {
   if (type === "PostCreated") {
     const { id, title, content, author } = data;
     posts[id] = {
@@ -34,7 +44,6 @@ app.post("/events", (req, res) => {
   if (type === "CommentCreated") {
     const { postId, id, content, author, status } = data;
     const post = posts[postId] || posts[String(postId)];
-
     console.log("PostId:", postId, "Post leitud:", !!post);
 
     if (post) {
@@ -63,15 +72,43 @@ app.post("/events", (req, res) => {
       console.log("VIGA: Postitust ei leitud! PostId:", postId);
     }
   }
+};
 
+app.post("/events", (req, res) => {
+  const { type, data } = req.body;
+  console.log("Sündmus vastu võetud:", type);
+  handleEvent(type, data);
   res.send({ status: "OK" });
 });
 
 app.get("/api/posts", (req, res) => {
-  console.log("GET /api/posts - tagastame:", posts);
-  res.json(posts);
+  console.log("GET /api/posts - tagastame:", Object.values(posts));
+  res.json(Object.values(posts));
 });
 
-app.listen(port, () => {
+// Sync all events from event-bus on startup
+const syncEvents = async () => {
+  try {
+    console.log("Sünkroniseerin sündmusi event-busist...");
+    const res = await axios.get("http://event-bus:5000/events");
+
+    console.log(`Leitud ${res.data.length} sündmust`);
+
+    for (let event of res.data) {
+      console.log("Töötlen sündmust:", event.type);
+      handleEvent(event.type, event.data);
+    }
+
+    console.log(
+      "Sünkroniseerimine lõpetatud. Postitusi:",
+      Object.keys(posts).length
+    );
+  } catch (error) {
+    console.log("Sünkroniseerimisel tekkis viga:", error.message);
+  }
+};
+
+app.listen(port, async () => {
   console.log(`Query service töötab pordil ${port}`);
+  await syncEvents();
 });

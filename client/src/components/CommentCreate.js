@@ -6,14 +6,11 @@ const CommentCreate = ({ postId }) => {
 
   const onSubmit = async (event) => {
     event.preventDefault();
-
     await axios.post(`https://blog.local/posts/${postId}/comments`, {
       content,
       author: "Anonymous",
     });
-
     setContent("");
-
     setTimeout(() => {
       window.location.reload();
     }, 2000);
